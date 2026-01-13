@@ -55,14 +55,185 @@ To verify the installation, open [haptics.jmw.nz/playground](https://haptics.jmw
 
 ### Step 2: Install the Claude Code Plugin
 
+Choose your operating system:
+
+<details>
+<summary><b>macOS</b></summary>
+
+#### Prerequisites
+- Git (included with Xcode Command Line Tools)
+- curl (included in macOS)
+
+#### Installation
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/ClaudeCodeHapticPlugin.git
-cd ClaudeCodeHapticPlugin
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
 ./install.sh
 ```
 
-The installer performs the following operations:
+#### Optional: Install jq for proper settings merging
+```bash
+brew install jq
+```
 
+</details>
+
+<details>
+<summary><b>Linux (Ubuntu/Debian)</b></summary>
+
+#### Prerequisites
+```bash
+sudo apt update
+sudo apt install git curl
+```
+
+#### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
+./install.sh
+```
+
+#### Optional: Install jq for proper settings merging
+```bash
+sudo apt install jq
+```
+
+</details>
+
+<details>
+<summary><b>Linux (Fedora/RHEL)</b></summary>
+
+#### Prerequisites
+```bash
+sudo dnf install git curl
+```
+
+#### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
+./install.sh
+```
+
+#### Optional: Install jq for proper settings merging
+```bash
+sudo dnf install jq
+```
+
+</details>
+
+<details>
+<summary><b>Windows (Git Bash)</b></summary>
+
+#### Prerequisites
+1. Install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash and curl)
+2. Ensure Logi Options+ is installed and running
+
+#### Installation
+
+Open **Git Bash** and run:
+
+```bash
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
+./install.sh
+```
+
+#### Optional: Install jq for proper settings merging
+
+Using [Chocolatey](https://chocolatey.org/):
+```powershell
+choco install jq
+```
+
+Using [Scoop](https://scoop.sh/):
+```powershell
+scoop install jq
+```
+
+</details>
+
+<details>
+<summary><b>Windows (WSL - Windows Subsystem for Linux)</b></summary>
+
+#### Prerequisites
+1. [Install WSL](https://learn.microsoft.com/en-us/windows/wsl/install) with Ubuntu or your preferred distribution
+2. Ensure Logi Options+ is installed on Windows (not inside WSL)
+
+#### Installation
+
+Open your WSL terminal and run:
+
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install git curl
+
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
+./install.sh
+```
+
+#### Optional: Install jq for proper settings merging
+```bash
+sudo apt install jq
+```
+
+> **Note:** The haptic API runs on Windows, but WSL can communicate with it via localhost.
+
+</details>
+
+<details>
+<summary><b>Windows (MSYS2)</b></summary>
+
+#### Prerequisites
+1. Install [MSYS2](https://www.msys2.org/)
+2. Open MSYS2 MINGW64 terminal
+
+#### Installation
+
+```bash
+# Install dependencies
+pacman -S git curl
+
+# Clone the repository
+git clone https://github.com/ChefJodlak/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+
+# Run the installer
+./install.sh
+```
+
+#### Optional: Install jq for proper settings merging
+```bash
+pacman -S jq
+```
+
+</details>
+
+---
+
+The installer automatically:
+- Detects your operating system
 - Validates HapticWebPlugin connectivity
 - Creates the hooks directory at `~/.claude/hooks/`
 - Installs the haptic trigger script
