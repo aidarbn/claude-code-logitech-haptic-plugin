@@ -1,5 +1,7 @@
 # Claude Code Haptic Feedback Plugin
 
+![Claude Code Haptic Feedback Plugin](static/banner.png)
+
 A lightweight integration that delivers tactile notifications through your Logitech MX Master 4 mouse when Claude Code requires your attention or completes a task.
 
 ## Overview
