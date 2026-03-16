@@ -10,15 +10,21 @@ When working with Claude Code, it's common to switch context while waiting for r
 
 ### How It Works
 
+**macOS / Windows** (via Logi Options+):
 ```
-Claude Code Event → Hook System → Shell Script → HTTP API → HapticWebPlugin → MX Master 4
+Claude Code Event → Hook → Shell Script → HTTP API → HapticWebPlugin → Logi Options+ → MX Master 4
+```
+
+**Linux** (native HID++, no Logi Options+ required):
+```
+Claude Code Event → Hook → Shell Script → mx4-haptic.py → /dev/hidraw → Bolt Receiver → MX Master 4
 ```
 
 1. Claude Code emits lifecycle events through its hook system
 2. The hook triggers our shell script with event metadata
 3. The script maps the event type to an appropriate haptic waveform
-4. An HTTP request is sent to the locally-running HapticWebPlugin
-5. HapticWebPlugin communicates with Logi Options+ to activate the haptic motor
+4. **On macOS/Windows:** an HTTP request is sent to the locally-running HapticWebPlugin → Logi Options+ activates the haptic motor
+5. **On Linux:** `mx4-haptic.py` sends HID++ 2.0 commands directly to the Bolt receiver via `/dev/hidraw` — no Logi Options+ needed
 
 ### Supported Events
 
@@ -30,16 +36,43 @@ Claude Code Event → Hook System → Shell Script → HTTP API → HapticWebPlu
 
 ## Prerequisites
 
-| Requirement | Details |
-|-------------|---------|
-| Hardware | Logitech MX Master 4 mouse |
-| Software | Logi Options+ application |
-| Plugin | HapticWebPlugin (installation instructions below) |
-| System | macOS, Linux, or Windows (Git Bash/MSYS2/WSL) with bash and curl |
+| Requirement | macOS / Windows | Linux (native) |
+|-------------|-----------------|-----------------|
+| Hardware | Logitech MX Master 4 | Logitech MX Master 4 via Bolt receiver |
+| Software | Logi Options+ | Python 3.6+ |
+| Plugin | HapticWebPlugin | Not needed |
+| System | bash, curl | bash, /dev/hidraw access |
 
 ## Installation
 
-### Step 1: Install HapticWebPlugin
+### Linux (native HID++ — no Logi Options+ needed)
+
+The Linux version communicates directly with the MX Master 4 via HID++ 2.0 protocol through `/dev/hidraw`. No Logi Options+, no HapticWebPlugin, no HTTP — just a Python script talking to the Bolt receiver.
+
+```bash
+git clone https://github.com/aidarbn/claude-code-logitech-haptic-plugin.git
+cd claude-code-logitech-haptic-plugin
+./install.sh
+```
+
+**Test it:**
+```bash
+python3 scripts/mx4-haptic.py knock --debug
+python3 scripts/mx4-haptic.py --list
+```
+
+**Permissions:** On most desktop Linux systems, udev + logind grant `/dev/hidraw*` access automatically via ACL. If you get a permission error:
+
+```bash
+sudo tee /etc/udev/rules.d/99-logitech-bolt.rules << 'EOF'
+KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c548", MODE="0660", TAG+="uaccess"
+EOF
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+### macOS / Windows (via Logi Options+)
+
+#### Step 1: Install HapticWebPlugin
 
 HapticWebPlugin is a third-party Logi Options+ plugin that exposes the MX Master 4 haptic motor through a local HTTPS API. This bridge is necessary because Logitech does not provide a public API for haptic control.
 
@@ -55,7 +88,7 @@ The plugin is included in this repository under the `plugin/` directory. It is s
 
 To verify the installation, open [haptics.jmw.nz/playground](https://haptics.jmw.nz/playground) and trigger any waveform. Your mouse should vibrate.
 
-### Step 2: Install the Claude Code Plugin
+#### Step 2: Install the Claude Code Plugin
 
 Choose your operating system:
 
@@ -414,14 +447,15 @@ WebSocket connections are also supported at `wss://local.jmw.nz:41443/ws` for lo
 ## Project Structure
 
 ```
-ClaudeCodeHapticPlugin/
+claude-code-logitech-haptic-plugin/
 ├── README.md                    Documentation
 ├── install.sh                   Installation script
 ├── uninstall.sh                 Removal script
 ├── plugin/
-│   └── HapticWeb.lplug4         Logi Options+ haptic plugin (third-party)
+│   └── HapticWeb.lplug4         Logi Options+ haptic plugin (macOS/Windows)
 └── scripts/
-    └── haptic-trigger.sh        Hook handler script
+    ├── haptic-trigger.sh        Hook handler (auto-detects Linux vs macOS/Windows)
+    └── mx4-haptic.py            Native Linux HID++ haptic driver
 ```
 
 ## Dependencies
@@ -448,9 +482,8 @@ The `jq` utility is optional but recommended. Without it, the installer will ove
 
 - **Select options (elicitation dialogs) do not trigger haptic feedback** - Due to a Claude Code limitation, the `elicitation_dialog` notification type is not emitted through the hook system when Claude presents selection options to the user. Only permission prompts, idle prompts, and task completion events trigger haptic feedback.
 - Haptic intensity cannot be controlled per-event (Logi Options+ global setting only)
-- Requires HapticWebPlugin to be running (starts automatically with Logi Options+)
-- WebSocket support not implemented (uses REST API for simplicity)
-- Supports macOS, Linux, and Windows (via Git Bash, MSYS2, or WSL)
+- **macOS/Windows:** Requires HapticWebPlugin to be running (starts automatically with Logi Options+)
+- **Linux:** Requires Bolt USB receiver (Bluetooth not yet supported for HID++ haptic)
 
 ## Third-Party Components
 
@@ -459,6 +492,8 @@ This project includes [HapticWebPlugin](https://github.com/Fallstop/HapticWebPlu
 ## References
 
 - [HapticWebPlugin](https://github.com/Fallstop/HapticWebPlugin) - Local haptic API bridge (included in `plugin/` directory)
+- [MyrikLD/mx4hyprland](https://github.com/MyrikLD/mx4hyprland) - Original Linux HID++ haptic implementation
+- [lukasfri/mx4notifications](https://github.com/lukasfri/mx4notifications) - Haptic on desktop notifications
 - [Claude Code Hooks Documentation](https://code.claude.com/docs/en/hooks) - Hook system reference
 - [Logi Actions SDK](https://logitech.github.io/actions-sdk-docs/) - Logitech plugin development
 - [MX Master 4 Haptics](https://www.logitech.com/en-us/software/logi-options-plus/haptics.html) - Official haptic information
